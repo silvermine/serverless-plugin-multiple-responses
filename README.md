@@ -19,6 +19,107 @@ Once that feature is supported in SLS this plugin will no longer be needed or ma
 TODO: provide an example of how to configure it in serverless.yml
 
 ```yml
+# I recommend using variables to define your responses since they tend
+# to be the same across all of your API gateway functions, but you
+# certainly don't have to.
+custom:
+   defaultRegion: us-east-1
+   region: ${opt:region, self:custom.defaultRegion}
+   stage: ${opt:stage, env:USER}
+   standardRequest:
+      template:
+         application/json: ${file(templates/standard-request.tpl)}
+   standardResponseHeaders:
+      'Access-Control-Allow-Origin': "'*'"
+      'Content-Type': 'integration.response.body.headers.Content-Type'
+      'Expires': 'integration.response.body.headers.Expires'
+      'Cache-Control': 'integration.response.body.headers.Cache-Control'
+      'Pragma': "'no-cache'"
+   standardResponseTemplate: "$input.path('$.body')"
+   errorResponseHeaders:
+      'Access-Control-Allow-Origin': "'*'"
+      'Expires': "'Thu, 19 Nov 1981 08:52:00 GMT'"
+      'Cache-Control': "'no-cache, max-age=0, must-revalidate'"
+      'Pragma': "'no-cache'"
+   errorResponseTemplate: "$input.path('$.errorMessage')"
+   # here is where you define what would appear under "responses" in your HTTP event
+   # if you were not using these variables. The key is the status code, and the value
+   # is an object that can have headers, templates, and properties
+   standardResponses:
+      200:
+         headers: ${self:custom.standardResponseHeaders}
+         templates:
+            'application/json;charset=UTF-8': ${self:custom.standardResponseTemplate}
+      404:
+         headers: ${self:custom.errorResponseHeaders}
+         templates:
+            'application/json;charset=UTF-8': ${self:custom.errorResponseTemplate}
+         properties:
+            SelectionPattern: '.*\"status\":404.*'
+      500:
+         headers: ${self:custom.errorResponseHeaders}
+         templates:
+            'application/json;charset=UTF-8': ${self:custom.errorResponseTemplate}
+         properties:
+            SelectionPattern: '.*\"status\":500.*'
+   redirectResponses:
+      # this is a special example where the object is actually `false`, which means
+      # "remove any existing response for this status code"
+      # This is useful for removing the default response provided by SLS so you can
+      # provide your own default, like here where I need 302 to be my default
+      # (non-error) response.
+      200: false
+      302:
+         headers:
+            Location: "integration.response.body.headers.Location"
+         templates:
+            'application/json;charset=UTF-8': "$input.path('$.body')"
+            'text/html;charset=UTF-8': "$input.path('$.body')"
+      404:
+         headers: ${self:custom.errorResponseHeaders}
+         templates:
+            'application/json;charset=UTF-8': "$input.path('$.body')"
+            'text/html;charset=UTF-8': "$input.path('$.body')"
+         properties:
+            SelectionPattern: '.*\"status\":404.*'
+      500:
+         headers: ${self:custom.errorResponseHeaders}
+         templates:
+            'application/json;charset=UTF-8': "$input.path('$.body')"
+            'text/html;charset=UTF-8': "$input.path('$.body')"
+         properties:
+            SelectionPattern: '.*\"status\":500.*'
+
+# Tell your service that you want to use this plugin:
+# (you'll need to `npm install` it first)
+plugins:
+   - serverless-plugin-multiple-responses
+
+# in the function's http event configuration you see where
+# we have `responses` instead of the normal `response`.
+functions:
+   ping:
+      name: ${self:service}-${self:provider.stage}-ping
+      handler: src/ping/Ping.handler
+      memorySize: 128
+      timeout: 2
+      events:
+         - http:
+            method: GET
+            path: ping
+            request: ${self:custom.standardRequest}
+            responses: ${self:custom.standardResponses}
+   redirector:
+      name: ${self:service}-${self:provider.stage}-redirector
+      handler: src/redirector/Redirector.handler
+      memorySize: 128
+      timeout: 2
+      events:
+         - http:
+            method: GET
+            path: redirector
+            request: ${self:custom.standardRequest}
+            responses: ${self:custom.redirectResponses}
 ```
 
 
