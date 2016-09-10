@@ -16,7 +16,27 @@ Once that feature is supported in SLS this plugin will no longer be needed or ma
 
 ## How do I use it?
 
-TODO: provide an example of how to configure it in serverless.yml
+The basic principle is that instead of adding a `response` attribute to your
+HTTP event config, you will add a `responses` attribute.
+
+The responses attribute is a key/value pair where the key is the status code of
+the response (e.g. 200, 404, etc). The value can be:
+
+   * `false` - which means "remove the default response configured by SLS (or another plugin) for this response code"
+   * an object with the following attributes:
+      * `headers` - just the same as the SLS `headers` attribute
+      * `templates` - similar to request templates, this is keyed by the response content type
+      * `properties` - any other properties to directly add to the CloudFormation template for this API method
+         * typically this is used to add `SelectionPattern` for the error responses
+
+NOTE: leaving one response without a selection pattern attribute makes it the
+default response.
+
+Below we will show two examples: a standard example where 200 is what your
+function returns for a successful completion, and another example where it
+needs to return a 302 as its default (non-error) response. The 302 response
+example would be used if your were building a bit.ly-like endpoint, for
+example.
 
 ```yml
 # I recommend using variables to define your responses since they tend
@@ -42,9 +62,8 @@ custom:
       'Cache-Control': "'no-cache, max-age=0, must-revalidate'"
       'Pragma': "'no-cache'"
    errorResponseTemplate: "$input.path('$.errorMessage')"
-   # here is where you define what would appear under "responses" in your HTTP event
-   # if you were not using these variables. The key is the status code, and the value
-   # is an object that can have headers, templates, and properties
+   # Here we are defining what would be under "responses" in your HTTP event
+   # if you were not using the custom variables.
    standardResponses:
       200:
          headers: ${self:custom.standardResponseHeaders}
@@ -63,11 +82,8 @@ custom:
          properties:
             SelectionPattern: '.*\"status\":500.*'
    redirectResponses:
-      # this is a special example where the object is actually `false`, which means
-      # "remove any existing response for this status code"
-      # This is useful for removing the default response provided by SLS so you can
-      # provide your own default, like here where I need 302 to be my default
-      # (non-error) response.
+      # Since we want to return 302 upon a successful completion, we remove the
+      # built-in default of 200
       200: false
       302:
          headers:
@@ -95,7 +111,7 @@ custom:
 plugins:
    - serverless-plugin-multiple-responses
 
-# in the function's http event configuration you see where
+# In the function's http event configuration you see where
 # we have `responses` instead of the normal `response`.
 functions:
    ping:
