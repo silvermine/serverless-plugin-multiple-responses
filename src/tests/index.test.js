@@ -66,27 +66,27 @@ describe('serverless-plugin-multiple-responses', function() {
                   Properties: {
                      Code: {
                         S3Bucket: { Ref: 'ServerlessDeploymentBucket' },
-                        S3Key: '1473599092284-2016-09-11T13:04:52.284Z/petstore.zip'
+                        S3Key: '1473599092284-2016-09-11T13:04:52.284Z/petstore.zip',
                      },
                      FunctionName: 'petstore-jrthomer-ping',
                      Handler: 'src/ping/Ping.handler',
                      MemorySize: 128,
                      Role: { 'Fn::GetAtt': [ 'IamRoleLambdaExecution', 'Arn' ] },
                      Runtime: 'nodejs4.3',
-                     Timeout: 2
-                  }
+                     Timeout: 2,
+                  },
                },
                ApiGatewayRestApi: {
                   Type: 'AWS::ApiGateway::RestApi',
-                  Properties: { Name: 'jrthomer-petstore' }
+                  Properties: { Name: 'jrthomer-petstore' },
                },
                ApiGatewayResourcePing: {
                   Type: 'AWS::ApiGateway::Resource',
                   Properties: {
                      ParentId: { 'Fn::GetAtt': [ 'ApiGatewayRestApi', 'RootResourceId' ] },
                      PathPart: 'ping',
-                     RestApiId: { Ref: 'ApiGatewayRestApi' }
-                  }
+                     RestApiId: { Ref: 'ApiGatewayRestApi' },
+                  },
                },
                ApiGatewayMethodPingGet: {
                   Type: 'AWS::ApiGateway::Method',
@@ -102,7 +102,7 @@ describe('serverless-plugin-multiple-responses', function() {
                         { StatusCode: 422 },
                         { StatusCode: 500 },
                         { StatusCode: 502 },
-                        { StatusCode: 504 }
+                        { StatusCode: 504 },
                      ],
                      RequestParameters: {},
                      Integration: {
@@ -118,7 +118,7 @@ describe('serverless-plugin-multiple-responses', function() {
                            {
                               StatusCode: 200,
                               ResponseParameters: {},
-                              ResponseTemplates: {}
+                              ResponseTemplates: {},
                            },
                            { StatusCode: 400, SelectionPattern: '.*\\[400\\].*' },
                            { StatusCode: 401, SelectionPattern: '.*\\[401\\].*' },
@@ -127,14 +127,14 @@ describe('serverless-plugin-multiple-responses', function() {
                            { StatusCode: 422, SelectionPattern: '.*\\[422\\].*' },
                            { StatusCode: 500, SelectionPattern: '.*(Process\\s?exited\\s?before\\s?completing\\s?request|\\[500\\]).*' },
                            { StatusCode: 502, SelectionPattern: '.*\\[502\\].*' },
-                           { StatusCode: 504, SelectionPattern: '.*\\[504\\].*' }
-                        ]
+                           { StatusCode: 504, SelectionPattern: '.*\\[504\\].*' },
+                        ],
                      },
                      ResourceId: { Ref: 'ApiGatewayResourcePing' },
-                     RestApiId: { Ref: 'ApiGatewayRestApi' }
-                  }
-               }
-            }
+                     RestApiId: { Ref: 'ApiGatewayRestApi' },
+                  },
+               },
+            },
          };
       }
 
