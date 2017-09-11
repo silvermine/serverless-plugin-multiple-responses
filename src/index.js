@@ -27,9 +27,9 @@ module.exports = Class.extend({
    },
 
    amendEvent: function(fnName, fnDef, httpDef) {
-      var normalizedPath = this._capitalizeAlphaNumericPath(httpDef.path),
-          normalizedMethodName = 'ApiGatewayMethod' + normalizedPath + this._normalize(httpDef.method, true),
-          cfnObj = this._serverless.service.provider.compiledCloudFormationTemplate.Resources[normalizedMethodName];
+      var normalizedPath = this._capitalizeAlphaNumericPath(httpDef.path);
+      var normalizedMethodName = 'ApiGatewayMethod' + normalizedPath + this._normalize(httpDef.method, true);
+      var cfnObj = this._serverless.service.provider.compiledCloudFormationTemplate.Resources[normalizedMethodName];
 
       if (_.isEmpty(cfnObj)) {
          return this._serverless.cli.log('Error: could not find CloudFormation object for ' + fnName + ':' + httpDef.path);
@@ -80,21 +80,22 @@ module.exports = Class.extend({
       // console.log(require('util').inspect(cfnObj, { depth: null }));
    },
 
-   _normalize: function(s, lower) {
+   _normalize: function(s, lower, addVar) {
       if (_.isEmpty(s)) {
          return;
       }
 
       if (lower) {
-         return s[0].toUpperCase() + s.substr(1).toLowerCase();
+
+         return s[0].toUpperCase() + s.substr(1).toLowerCase() + (addVar ? 'Var':'');
       }
 
-      return s[0].toUpperCase() + s.substr(1);
+      return s[0].toUpperCase() + s.substr(1) + (addVar ? 'Var':'');
    },
 
    _capitalizeAlphaNumericPath: function(path) {
       return _.reduce(path.split('/'), function(memo, part) {
-         return memo + this._normalize(part.replace(/[^0-9A-Za-z]/g, ''), true);
+         return memo + this._normalize(part.replace(/[^0-9A-Za-z]/g, ''), true, part.indexOf('{') === 0);
       }.bind(this), '');
    },
 
