@@ -80,21 +80,22 @@ module.exports = Class.extend({
       // console.log(require('util').inspect(cfnObj, { depth: null }));
    },
 
-   _normalize: function(s, lower) {
+   _normalize: function(s, lower, addVar) {
       if (_.isEmpty(s)) {
          return;
       }
 
       if (lower) {
-         return s[0].toUpperCase() + s.substr(1).toLowerCase();
+
+         return s[0].toUpperCase() + s.substr(1).toLowerCase() + (addVar ? 'Var' : '');
       }
 
-      return s[0].toUpperCase() + s.substr(1);
+      return s[0].toUpperCase() + s.substr(1) + (addVar ? 'Var' : '');
    },
 
    _capitalizeAlphaNumericPath: function(path) {
       return _.reduce(path.split('/'), function(memo, part) {
-         return memo + this._normalize(part.replace(/[^0-9A-Za-z]/g, ''), true);
+         return memo + this._normalize(part.replace(/[^0-9A-Za-z]/g, ''), true, part.indexOf('{') === 0);
       }.bind(this), '');
    },
 
