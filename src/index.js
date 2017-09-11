@@ -27,9 +27,9 @@ module.exports = Class.extend({
    },
 
    amendEvent: function(fnName, fnDef, httpDef) {
-      var normalizedPath = this._capitalizeAlphaNumericPath(httpDef.path);
-      var normalizedMethodName = 'ApiGatewayMethod' + normalizedPath + this._normalize(httpDef.method, true);
-      var cfnObj = this._serverless.service.provider.compiledCloudFormationTemplate.Resources[normalizedMethodName];
+      var normalizedPath = this._capitalizeAlphaNumericPath(httpDef.path),
+          normalizedMethodName = 'ApiGatewayMethod' + normalizedPath + this._normalize(httpDef.method, true),
+          cfnObj = this._serverless.service.provider.compiledCloudFormationTemplate.Resources[normalizedMethodName];
 
       if (_.isEmpty(cfnObj)) {
          return this._serverless.cli.log('Error: could not find CloudFormation object for ' + fnName + ':' + httpDef.path);
@@ -87,10 +87,10 @@ module.exports = Class.extend({
 
       if (lower) {
 
-         return s[0].toUpperCase() + s.substr(1).toLowerCase() + (addVar ? 'Var':'');
+         return s[0].toUpperCase() + s.substr(1).toLowerCase() + (addVar ? 'Var' : '');
       }
 
-      return s[0].toUpperCase() + s.substr(1) + (addVar ? 'Var':'');
+      return s[0].toUpperCase() + s.substr(1) + (addVar ? 'Var' : '');
    },
 
    _capitalizeAlphaNumericPath: function(path) {
