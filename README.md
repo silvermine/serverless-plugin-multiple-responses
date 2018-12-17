@@ -1,3 +1,13 @@
+# WARNING: DEPRECATED PLUGIN
+
+Serverless now supports custom [response headers][sls-response-headers] and [status
+codes][sls-status-code]. As such, this plugin is deprecated and no longer maintained. For
+more information on the API Gateway proxy integration, please see
+https://github.com/serverless/serverless/issues/2174
+
+[sls-response-headers]: https://serverless.com/framework/docs/providers/aws/events/apigateway/#custom-response-headers
+[sls-status-code]: https://serverless.com/framework/docs/providers/aws/events/apigateway#status-codes
+
 # Serverless Plugin: Multiple Responses
 
 [![Build Status](https://travis-ci.org/silvermine/serverless-plugin-multiple-responses.png?branch=master)](https://travis-ci.org/silvermine/serverless-plugin-multiple-responses)
